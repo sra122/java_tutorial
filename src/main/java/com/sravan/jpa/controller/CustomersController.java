@@ -1,5 +1,6 @@
 package com.sravan.jpa.controller;
 
+import com.sravan.jpa.exception.ConstraintViolationException;
 import com.sravan.jpa.exception.EntityNotFoundException;
 import com.sravan.jpa.model.Customer;
 import com.sravan.jpa.service.CustomerService;
@@ -13,12 +14,13 @@ public class CustomersController
 {
     @Autowired CustomerService customerService;
 
-    @PostMapping("")
-    public Customer createCustomer(@RequestBody Customer customer) {
+    @PostMapping
+    public Customer createCustomer(@RequestBody Customer customer) throws ConstraintViolationException
+    {
         return customerService.createCustomer(customer);
     }
 
-    @GetMapping("")
+    @GetMapping
     public List<Customer> getCustomers() {
         return customerService.getListOfCustomers();
     }
@@ -30,7 +32,7 @@ public class CustomersController
     }
 
     @PutMapping("/{id}")
-    public Customer updateCustomer(@RequestBody Customer customer, @PathVariable Long id) throws EntityNotFoundException
+    public Customer updateCustomer(@RequestBody Customer customer, @PathVariable Long id) throws EntityNotFoundException, ConstraintViolationException
     {
         return customerService.updateCustomer(customer, id);
     }

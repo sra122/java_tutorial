@@ -1,11 +1,13 @@
 package com.sravan.jpa.service;
 
+import com.sravan.jpa.exception.ConstraintViolationException;
 import com.sravan.jpa.exception.EntityNotFoundException;
 import com.sravan.jpa.model.Car;
 import com.sravan.jpa.repository.CarsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -13,8 +15,14 @@ public class CarService
 {
     @Autowired CarsRepository carsRepository;
 
-    public Car createCar(Car car) {
-        return carsRepository.save(car);
+    public Car createCar(Car car) throws ConstraintViolationException
+    {
+        car.setCreatedDate(Instant.now().toEpochMilli());
+        try {
+            return carsRepository.save(car);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConstraintViolationException(e.getMessage());
+        }
     }
 
     public Car getCar(Long id) throws EntityNotFoundException {
@@ -25,7 +33,7 @@ public class CarService
         return carsRepository.findAllByIsDeletedFalse();
     }
 
-    public Car updateCar(Car car, Long id) throws EntityNotFoundException {
+    public Car updateCar(Car car, Long id) throws EntityNotFoundException, ConstraintViolationException {
         Car carEntity = findCarById(id);
 
         carEntity.setColor(car.getColor());
@@ -33,15 +41,18 @@ public class CarService
         carEntity.setMillage(car.getMillage());
         carEntity.setModel(car.getModel());
         carEntity.setLicencePlate(car.getLicencePlate());
-        carEntity.setModifiedDate(new java.util.Date());
-        return carsRepository.save(carEntity);
+        try {
+            return carsRepository.save(carEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConstraintViolationException(e.getMessage());
+        }
+
     }
 
 
     public void deleteCar(Long id) throws EntityNotFoundException {
         Car car = findCarById(id);
         car.setIsDeleted(true);
-        car.setModifiedDate(new java.util.Date());
         carsRepository.save(car);
     }
 

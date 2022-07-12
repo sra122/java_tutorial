@@ -1,12 +1,13 @@
 package com.sravan.jpa.service;
 
+import com.sravan.jpa.exception.ConstraintViolationException;
 import com.sravan.jpa.exception.EntityNotFoundException;
 import com.sravan.jpa.model.Customer;
 import com.sravan.jpa.repository.CustomersRepository;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -15,10 +16,13 @@ public class CustomerService
     @Autowired
     CustomersRepository customersRepository;
 
-    public Customer createCustomer(Customer customer) {
-        customer.setModifiedDate(new java.util.Date());
-        customer.setCreatedDate(new java.util.Date());
-        return customersRepository.save(customer);
+    public Customer createCustomer(Customer customer) throws ConstraintViolationException {
+        customer.setCreatedDate(Instant.now().toEpochMilli());
+        try {
+            return customersRepository.save(customer);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConstraintViolationException(e.getMessage());
+        }
     }
 
 
@@ -32,17 +36,19 @@ public class CustomerService
     }
 
 
-    public Customer updateCustomer(Customer customer, Long id) throws EntityNotFoundException{
+    public Customer updateCustomer(Customer customer, Long id) throws EntityNotFoundException, ConstraintViolationException{
         Customer customerEntity = findCustomerById(id);
         customerEntity.setDrivingLicenceNumber(customer.getDrivingLicenceNumber());
-        customerEntity.setModifiedDate(new java.util.Date());
-        return customersRepository.save(customerEntity);
+        try {
+            return customersRepository.save(customerEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConstraintViolationException(e.getMessage());
+        }
     }
 
     public void deleteCustomer(Long id) throws EntityNotFoundException{
         Customer customer = findCustomerById(id);
         customer.setActive(true);
-        customer.setModifiedDate(new java.util.Date());
         customersRepository.save(customer);
     }
 

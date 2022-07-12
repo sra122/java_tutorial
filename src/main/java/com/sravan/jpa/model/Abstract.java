@@ -2,26 +2,25 @@ package com.sravan.jpa.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.io.Serializable;
+import java.time.Instant;
 
 
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class Abstract
+public abstract class Abstract implements Serializable
 {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long Id;
 
-    private Date createdDate;
+    private long createdDate;
 
-    private Date modifiedDate;
+    private long modifiedDate = Instant.now().toEpochMilli();
 
-    @ColumnDefault("false")
-    private Boolean isDeleted;
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 }
